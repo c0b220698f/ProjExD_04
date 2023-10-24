@@ -308,7 +308,7 @@ def main():
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
             if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
-                if score.score > -1: 
+                if score.score > 200: 
                     neos.add(NeoGravity(400))
         screen.blit(bg_img, [0, 0])
 
