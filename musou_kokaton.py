@@ -308,7 +308,8 @@ def main():
                 
                 # 重力場発生条件
             if event.type == pg.KEYDOWN and event.key == pg.K_TAB:
-                if score.score < 50:
+                if score.score > 50:
+                    score.score -= 50
                     gras.add(Gravity(bird, 200, 500))
                     
         screen.blit(bg_img, [0, 0])
