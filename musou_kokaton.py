@@ -271,6 +271,20 @@ class Score:
     def update(self, screen: pg.Surface):
         self.image = self.font.render(f"Score: {self.score}", 0, self.color)
         screen.blit(self.image, self.rect)
+        
+#重力クラス
+class Gravity(pg.sprite.Sprite):
+    def __init__(self, bird, size, life):
+        super().__init__()
+        self.image = pg.Surface((2*size,2*size))
+        pg.draw.circle(self.image,(10,10,10),(size,size),size)
+        self.image.set_alpha(200)
+        self.image.set_colorkey((0, 0, 0))
+        self.rect = self.image.get_rect()
+        self.rect.center = bird.rect.center
+        self.life = life
+        
+        
     
 class NeoGravity(pg.sprite.Sprite):
     """
@@ -289,9 +303,6 @@ class NeoGravity(pg.sprite.Sprite):
         self.life -= 1
         if self.life < 0:
             self.kill()
-        
-        
-    
 
 
 def main():
@@ -305,6 +316,8 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    #重力場
+    gras = pg.sprite.Group()
     neos = pg.sprite.Group()
 
     tmr = 0
@@ -316,6 +329,13 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+                
+                # 重力場発生条件
+            if event.type == pg.KEYDOWN and event.key == pg.K_TAB:
+                if score.score > 50:
+                    score.score -= 50
+                    gras.add(Gravity(bird, 200, 500))
+                    
             if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
                 if score.score > 200: 
                     score.score_up(-200) 
@@ -329,8 +349,9 @@ def main():
             if emy.state == "stop" and tmr % emy.interval == 0:
                 # 敵機が停止状態に入ったら，intervalに応じて爆弾投下
                 bombs.add(Bomb(emy, bird))
-
-        for emy in pg.sprite.groupcollide(emys, beams, True, True).keys():
+                
+                # 貫通弾にしました
+        for emy in pg.sprite.groupcollide(emys, beams, True, False).keys():
             exps.add(Explosion(emy, 100))  # 爆発エフェクト
             score.score_up(10)  # 10点アップ
             bird.change_img(6, screen)  # こうかとん喜びエフェクト
@@ -340,7 +361,12 @@ def main():
             score.score_up(10)  # 10点アップ
             bird.change_img(6, screen)  # こうかとん喜びエフェクト
 
-        for bomb in pg.sprite.groupcollide(bombs, beams, True, True).keys():
+        for bomb in pg.sprite.groupcollide(bombs, beams, True, False).keys():
+            exps.add(Explosion(bomb, 50))  # 爆発エフェクト
+            score.score_up(1)  # 1点アップ
+            
+            #重力当たり判定
+        for bomb in pg.sprite.groupcollide(bombs, gras, True, False).keys():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.score_up(1)  # 1点アップ
         
@@ -355,6 +381,7 @@ def main():
             pg.display.update()
             time.sleep(2)
             return
+        
 
         bird.update(key_lst, screen)
         beams.update()
@@ -365,9 +392,13 @@ def main():
         bombs.draw(screen)
         exps.update()
         exps.draw(screen)
+        # 重力表示
+        gras.update()
+        gras.draw(screen)
         neos.update()
         neos.draw(screen)
         score.update(screen)
+        
         pg.display.update()
         tmr += 1
         clock.tick(50)
@@ -378,3 +409,4 @@ if __name__ == "__main__":
     main()
     pg.quit()
     sys.exit()
+
