@@ -172,7 +172,7 @@ class Beam(pg.sprite.Sprite):
         self.rect.centery = bird.rect.centery + bird.rect.height * self.vy
         self.rect.centerx = bird.rect.centerx + bird.rect.width * self.vx
         self.speed = 10
-
+        self.turn = 0
     def update(self):
         """
         ビームを速度ベクトルself.vx, self.vyに基づき移動させる
@@ -181,6 +181,21 @@ class Beam(pg.sprite.Sprite):
         self.rect.move_ip(+self.speed * self.vx, +self.speed * self.vy)
         if check_bound(self.rect) != (True, True):
             self.kill()
+
+class NeoBeam(pg.sprite.Sprite):
+    """
+    弾幕に関するクラス
+    """
+    
+    def __init__(self, bird:Bird, num:int):
+        super().__init__()
+        
+    def gen_beams(self):
+        self.neobeam = []
+        for i in range(self.num):
+            self.neobeam.append(self.image)
+        return self.neobeam
+        
 
 
 class Explosion(pg.sprite.Sprite):
@@ -285,6 +300,8 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+                if event.type == pg.K_LSHIFT:
+                    beams.add(NeoBeam(bird, 5))
         screen.blit(bg_img, [0, 0])
 
         if tmr % 200 == 0:  # 200フレームに1回，敵機を出現させる
